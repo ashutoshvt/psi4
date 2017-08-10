@@ -55,6 +55,11 @@ struct Local {
   double *eps_occ;
   double **eps_vir;
   double cutoff;
+  double pno_cutoff;
+  double osv_cutoff;
+  std::string osv_type;
+  double pair_energy_cutoff;
+  double singles_cutoff;
   std::string method;
   std::string weakp;
   int filter_singles;

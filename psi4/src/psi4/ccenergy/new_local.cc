@@ -27,31 +27,34 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libciomr/libciomr.h>
-#include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include <psi4/libciomr/libciomr.h>
+#include <psi4/libdpd/dpd.h>
+#include <psi4/libqt/qt.h>
 #include "Params.h"
 #define EXTERN
-#include "globals.h"
+//#include "globals.h"
 #include "MOInfo.h"
 #include "Local.h"
 
-#include <libmints/mints.h>
-#include <libpsio/psio.h>
+#include <psi4/libmints/mintshelper.h>
+#include <psi4/libmints/matrix.h>
+#include <psi4/libmints/vector.h>
+#include <psi4/libpsio/psio.h>
 #include "New_Local.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
 /// Constructor
-New_Local::New_Local() {
+New_Local::New_Local(MOInfo & moinfo_, Local & local_) {
     /* Set up basic info */
-    nocc_    = moinfo.clsdpi[0];
-    nvir_    = moinfo.nmo - nocc_ - moinfo.frdocc[0] - moinfo.fruocc[0];
+    nocc_    = moinfo_.clsdpi[0];
+    nvir_    = moinfo_.nmo - nocc_ - moinfo_.frdocc[0] - moinfo_.fruocc[0];
     npairs_  = nocc_ * nocc_;
     local_type_ = "PNO"; 
-    pno_cut_    = local.pno_cutoff;
-    pair_cut_   = local.pair_energy_cutoff;
-    singles_cut_ = local.singles_cutoff;
+    pno_cut_    = local_.pno_cutoff;
+    pair_cut_   = local_.pair_energy_cutoff;
+    singles_cut_ = local_.singles_cutoff;
     //pno_cut_ = options.get_double("PNO_CUTOFF");
 
     /* Grab Local Occ. Orb. Energies */
@@ -61,7 +64,7 @@ New_Local::New_Local() {
     init_pno();
 }
 
-New_Local::New_Local(bool init) {
+New_Local::New_Local(MOInfo & moinfo_, Local & local_, bool init) {
     /* Set up basic info */
     //  Getting nocc_ and vir_ from local struct doesn't work, b/c
     //  b/c they get set in local_init(), which doesn't get called for
@@ -69,12 +72,12 @@ New_Local::New_Local(bool init) {
     //  both get set in get_params().
     //nocc_    = local.nocc;
     //nvir_    = local.nvir;
-    nocc_    = moinfo.clsdpi[0];
-    nvir_    = moinfo.nmo - nocc_ - moinfo.frdocc[0] - moinfo.fruocc[0];
+    nocc_    = moinfo_.clsdpi[0];
+    nvir_    = moinfo_.nmo - nocc_ - moinfo_.frdocc[0] - moinfo_.fruocc[0];
     npairs_  = nocc_ * nocc_;
-    pno_cut_ = local.pno_cutoff;
-    pair_cut_ = local.pair_energy_cutoff;
-    singles_cut_ = local.singles_cutoff;
+    pno_cut_ = local_.pno_cutoff;
+    pair_cut_ = local_.pair_energy_cutoff;
+    singles_cut_ = local_.singles_cutoff;
     local_type_ = "PNO"; 
     //pno_cut_ = options.get_double("PNO_CUTOFF");
 
@@ -85,23 +88,23 @@ New_Local::New_Local(bool init) {
     if(init) init_pno();
 }
 
-New_Local::New_Local(std::string local_type, bool init) {
+New_Local::New_Local(MOInfo & moinfo_, Local & local_, std::string local_type, bool init) {
     /* Set up basic info */
-    nocc_    = moinfo.clsdpi[0];
-    nvir_    = moinfo.nmo - nocc_  - moinfo.frdocc[0] - moinfo.fruocc[0];
+    nocc_    = moinfo_.clsdpi[0];
+    nvir_    = moinfo_.nmo - nocc_  - moinfo_.frdocc[0] - moinfo_.fruocc[0];
     npairs_  = nocc_ * nocc_;
-    pair_cut_ = local.pair_energy_cutoff;
+    pair_cut_ = local_.pair_energy_cutoff;
     local_type_  = local_type;
-    singles_cut_ = local.singles_cutoff;
+    singles_cut_ = local_.singles_cutoff;
     /*
     fprintf(outfile, "\tDimension Check:\n");
     fprintf(outfile, "\tNum. Active Occ. = %d\n", nocc_);
-    fprintf(outfile, "\tNum. Frozen Occ. = %d\n", moinfo.frdocc[0]);
+    fprintf(outfile, "\tNum. Frozen Occ. = %d\n", moinfo_.frdocc[0]);
     fprintf(outfile, "\tNum. Active Vir. = %d\n", nvir_);
-    fprintf(outfile, "\tNum. Frozen Vir. = %d\n", moinfo.fruocc[0]);
-    fprintf(outfile, "\tNum. NMO    = %d\n", moinfo.nmo);
-    fprintf(outfile, "\tNum. OCCPI  = %d\n", moinfo.occpi[0]);
-    fprintf(outfile, "\tNum. CLSDPI = %d\n", moinfo.clsdpi[0]);
+    fprintf(outfile, "\tNum. Frozen Vir. = %d\n", moinfo_.fruocc[0]);
+    fprintf(outfile, "\tNum. NMO    = %d\n", moinfo_.nmo);
+    fprintf(outfile, "\tNum. OCCPI  = %d\n", moinfo_.occpi[0]);
+    fprintf(outfile, "\tNum. CLSDPI = %d\n", moinfo_.clsdpi[0]);
     fflush(outfile);
     */
 
@@ -111,20 +114,20 @@ New_Local::New_Local(std::string local_type, bool init) {
     /* Initialize PNO */
     if(local_type_ == "PNO") {
         //pno_cut_ = options.get_double("PNO_CUTOFF");
-        pno_cut_ = local.pno_cutoff;
+        pno_cut_ = local_.pno_cutoff;
         if(init) init_pno();
     }
     if(local_type_ == "OSV") {
         //osv_cut_ = options.get_double("OSV_CUTOFF");
-        osv_cut_ = local.osv_cutoff;
-        osv_type_ = local.osv_type;
+        osv_cut_ = local_.osv_cutoff;
+        osv_type_ = local_.osv_type;
         if(init) init_osv();
     }
 }
 
 void New_Local::init_pno(void) {
-    fprintf(outfile, "\tINIT PNO\n");
-    fflush(outfile);
+    //fprintf(outfile, "\tINIT PNO\n");
+    //fflush(outfile);
     dpdbuf4 T2; // T
     dpdbuf4 N;  // T~
     dpdbuf4 D;  // Energy denominator
@@ -252,16 +255,16 @@ void New_Local::init_pno(void) {
     }
 
     /* Print some stats */
-    fprintf(outfile, "\nNumber of Pairs: %d\n", npairs_);
+    //fprintf(outfile, "\nNumber of Pairs: %d\n", npairs_);
     double avg_pno = 0.0;
     for(int ij=0; ij < npairs_; ++ij)
         if(!weak_pairs_[ij]) avg_pno += dim_->get(ij);
     avg_pno /= npairs_;
-    fprintf(outfile, "\tAverage # PNO's: %10.3lf\n", avg_pno);
-    fprintf(outfile, "\nPNO Dimensions:\n");
-    fflush(outfile);
-    dim_->print(outfile);
-    fflush(outfile);
+    //fprintf(outfile, "\tAverage # PNO's: %10.3lf\n", avg_pno);
+    //fprintf(outfile, "\nPNO Dimensions:\n");
+    //fflush(outfile);
+    dim_->print("outfile");
+    //fflush(outfile);
 
     /* T1,T2 Length for direct comparison to PAO approach */
     int t1_length  = 0;
@@ -278,17 +281,17 @@ void New_Local::init_pno(void) {
         for(int i=0; i < nocc_; ++i)
             t1_length += (int) t1dim_->get(i);
     }
-    fprintf(outfile, "\n\tT1 Length = %d (local), %d (canonical)\n",
-            t1_length, nocc_*nvir_);
-    fprintf(outfile, "\tT2 Length = %d (local), %d (canonical)\n\n",
-            t2_length, nocc_*nocc_*nvir_*nvir_);
+    //fprintf(outfile, "\n\tT1 Length = %d (local), %d (canonical)\n",
+    //        t1_length, nocc_*nvir_);
+    //fprintf(outfile, "\tT2 Length = %d (local), %d (canonical)\n\n",
+    //        t2_length, nocc_*nocc_*nvir_*nvir_);
 
     // Make list of surviving pairs.
     get_pair_list(dim_);
     int spairs = pair_list_.size();
     /*
     fprintf(outfile, "\tSurviving Pairs:\n");
-    fflush(outfile);
+    //fflush(outfile);
     for(int x=0; x < spairs; ++x) {
         fprintf(outfile, "\tPair: %d\n", pair_list_[x] + 1);
         fflush(outfile);
@@ -360,8 +363,8 @@ void New_Local::init_pno(void) {
  *  The ij-pair transforms are the ii & jj transforms collated together.
  */
 void New_Local::init_osv(void) {
-    fprintf(outfile, "\tINIT OSV\n");
-    fflush(outfile);
+    //fprintf(outfile, "\tINIT OSV\n");
+    //fflush(outfile);
     dpdbuf4 T2; // T
     dpdbuf4 N;  // T~
     dpdbuf4 D;  // Energy denominator
@@ -495,12 +498,12 @@ void New_Local::init_osv(void) {
     }
 
     /* Print some stats */
-    fprintf(outfile, "\nNumber of Diagonal Pairs: %d\n", nocc_);
+    //fprintf(outfile, "\nNumber of Diagonal Pairs: %d\n", nocc_);
     double avg_osv = 0.0;
     for(int ii=0; ii < nocc_; ++ii)
         avg_osv += dim->get(ii);
     avg_osv /= nocc_;
-    fprintf(outfile, "\tDiagonal Pair Average # OSV's: %10.3lf\n", avg_osv);
+    //fprintf(outfile, "\tDiagonal Pair Average # OSV's: %10.3lf\n", avg_osv);
     /*
     fprintf(outfile, "\nOSV Dimensions:\n");
     fflush(outfile);
@@ -599,15 +602,15 @@ void New_Local::init_osv(void) {
     get_semicanonical_transform();
 
     /* Redo the Stats since removed linear dependencies */
-    fprintf(outfile, "\nNumber of Pairs: %d\n", npairs_);
+    //fprintf(outfile, "\nNumber of Pairs: %d\n", npairs_);
     avg_osv = 0.0;
     for(int ij=0; ij < npairs_; ++ij)
         avg_osv += dim_->get(ij);
     avg_osv /= npairs_;
-    fprintf(outfile, "\tActual Average # OSV's: %10.3lf\n", avg_osv);
-    fflush(outfile);
-    dim_->print(outfile);
-    fflush(outfile);
+    //fprintf(outfile, "\tActual Average # OSV's: %10.3lf\n", avg_osv);
+    //fflush(outfile);
+    dim_->print("outfile");
+    //fflush(outfile);
 
     /* T1,T2 Length for direct comparison to PAO approach */
     int t1_length  = 0;
@@ -623,10 +626,10 @@ void New_Local::init_osv(void) {
         for(int i=0; i < nocc_; ++i)
             t1_length += (int) t1dim_->get(i);
     }
-    fprintf(outfile, "\n\tT1 Length = %d (local), %d (canonical)\n",
-            t1_length, nocc_*nvir_);
-    fprintf(outfile, "\tT2 Length = %d (local), %d (canonical)\n\n",
-            t2_length, nocc_*nocc_*nvir_*nvir_);
+    //fprintf(outfile, "\n\tT1 Length = %d (local), %d (canonical)\n",
+    //        t1_length, nocc_*nvir_);
+    //fprintf(outfile, "\tT2 Length = %d (local), %d (canonical)\n\n",
+    //        t2_length, nocc_*nocc_*nvir_*nvir_);
   
     /* Write the PNO dimensions and transforms to CC_INFO */
     psio_address next;
@@ -841,10 +844,10 @@ void New_Local::init_sep_singles(std::vector<SharedMatrix> Q_full) {
     for(int i=0; i < nocc_; ++i)
         avg_pno += t1dim_->get(i);
     avg_pno /= nocc_;
-    fprintf(outfile, "\tAverage # Virtuals (singles): %10.3lf\n", avg_pno);
-    fprintf(outfile, "\nLocal Singles Dimensions:\n");
-    t1dim_->print(outfile);
-    fflush(outfile);
+    //fprintf(outfile, "\tAverage # Virtuals (singles): %10.3lf\n", avg_pno);
+    //fprintf(outfile, "\nLocal Singles Dimensions:\n");
+    t1dim_->print("outfile");
+    //fflush(outfile);
 
     // Form truncated transforms.
     for(int i=0; i < nocc_; ++i) {
@@ -869,8 +872,8 @@ void New_Local::init_sep_singles(std::vector<SharedMatrix> Q_full) {
   
     /* Get semicanonical transforms from virtual fock block */
     sep_singles_semicanonical_transform();
-    fprintf(outfile, "\tFinished sep semi trans.\n");
-    fflush(outfile);
+    //fprintf(outfile, "\tFinished sep semi trans.\n");
+    //fflush(outfile);
   
     /* Write the PNO dimensions and transforms to CC_INFO */
     psio_address next;
@@ -1668,7 +1671,7 @@ void New_Local::update_pair_list(SharedVector dim) {
 void New_Local::get_occ_epsilons(void) {
     // Unnecessary, b/c PSIF_CC_OEI only has active orbital energies.
     /*
-    int nfzc = moinfo.frdocc[0];
+    int nfzc = moinfo_.frdocc[0];
     fprintf(outfile, "\tGetting occupied orbital energies...\n");
     fprintf(outfile, "\tNocc = %d, Nfzc = %d\n", nocc_, nfzc);
     fflush(outfile);
@@ -1708,16 +1711,17 @@ void New_Local::lmp2_pair_energy(std::vector<SharedMatrix> T2mats, std::vector<S
     Dints[1]->print();
     */
     pair_energies->print();
-    fprintf(outfile, "\t|Pair Energy| cutoff: %3.1e\n", pair_cut_);
-    fprintf(outfile, "\tNumber of Weak Pairs: %d\n", nwp);
+    //fprintf(outfile, "\t|Pair Energy| cutoff: %3.1e\n", pair_cut_);
+    //fprintf(outfile, "\tNumber of Weak Pairs: %d\n", nwp);
     if(nwp) {
-        fprintf(outfile, "\t*** Weak Pairs ***\n");
+        //fprintf(outfile, "\t*** Weak Pairs ***\n");
         for(ij=0; ij < npairs_; ++ij) {
             if(weak_pairs_[ij]) 
-                fprintf(outfile, "\t\t %2d\n", ij+1);
+                {//fprintf(outfile, "\t\t %2d\n", ij+1);
+                }
         }
     }
-    fprintf(outfile, "\n");
+    //fprintf(outfile, "\n");
 
     psio_address next;
     psio_write_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs_, npairs_ * sizeof(int));

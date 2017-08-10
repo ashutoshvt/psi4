@@ -80,10 +80,15 @@ public:
      // -> Sets basic variables.
      // -> Grabs eps_occ_. 
      // -> If bool is true, calls init_pno().
-    New_Local();
-    New_Local(bool);
-    New_Local(std::string);
-    New_Local(std::string, bool);
+    //New_Local();
+    //New_Local(bool);
+    //New_Local(std::string);
+    //New_Local(std::string, bool);
+
+    New_Local(MOInfo & m, Local & l);
+    New_Local(MOInfo & m, Local & l, bool);
+    New_Local(MOInfo & m, Local & l, std::string);
+    New_Local(MOInfo & m, Local & l, std::string, bool);
 
     /// Initial PNO
      // -> Computes and writes Q_, L_, dim_, and eps_vir_ to CC_INFO.

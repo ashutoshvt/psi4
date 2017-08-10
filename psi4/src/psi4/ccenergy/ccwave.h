@@ -51,7 +51,6 @@ public:
     virtual ~CCEnergyWavefunction();
 
     double compute_energy();
-
 private:
 
     /* setup, info and teardown */
