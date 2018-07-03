@@ -64,6 +64,7 @@ set(sources_list local.cc
                  cdsalclist.cc
                  erd_eri.cc
                  angularmomentum.cc
+                 giao_overlap_deriv.cc
 		 bessel.cc
 		 gaussquad.cc
 		 ecpint.cc
