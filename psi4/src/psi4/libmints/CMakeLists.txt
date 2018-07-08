@@ -65,6 +65,9 @@ set(sources_list local.cc
                  erd_eri.cc
                  angularmomentum.cc
                  giao_overlap_deriv.cc
+                 giao_angmom.cc
+                 giao_kinetic.cc
+                 giao_potential.cc
 		 bessel.cc
 		 gaussquad.cc
 		 ecpint.cc
