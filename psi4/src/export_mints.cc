@@ -70,6 +70,8 @@
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/giao_overlap_deriv.h"
 #include "psi4/libmints/giao_angmom.h"
+#include "psi4/libmints/giao_kinetic.h"
+#include "psi4/libmints/giao_potential.h"
 
 #include <string>
 
@@ -1007,6 +1009,8 @@ void export_mints(py::module& m) {
              py::arg("origin") = std::vector<double>{0, 0, 0}, py::arg("deriv") = 0)
         .def("giao_overlap_deriv", &MintsHelper::giao_overlap_deriv, "Vector of GIAO overlap integrals")
         .def("giao_angmom", &MintsHelper::giao_angmom, "Vector of GIAO angular momentum integrals")
+        .def("giao_kinetic", &MintsHelper::giao_kinetic, "Vector of GIAO kinetic energy integrals")
+        .def("giao_potential", &MintsHelper::giao_potential, "Vector of GIAO potential energy integrals")
 
         // Two-electron AO
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", py::arg("factory") = nullptr)
