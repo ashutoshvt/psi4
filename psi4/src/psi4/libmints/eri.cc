@@ -45,10 +45,30 @@ ERI::ERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
                           basis2()->max_am() +
                           basis3()->max_am() +
                           basis4()->max_am() +
-                          deriv_+1, 1e-15);
+                          deriv_+2, 1e-15);
 }
 
 ERI::~ERI()
+{
+    delete fjt_;
+}
+
+/////////
+// Derivative of two electron integrals of GIAOs.
+/////////
+
+GiaoERI::GiaoERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoElectronInt(integral, deriv, use_shell_pairs)
+{
+    // The +1 is needed for derivatives to work.
+    fjt_ = new Taylor_Fjt(basis1()->max_am() +
+                          basis2()->max_am() +
+                          basis3()->max_am() +
+                          basis4()->max_am() +
+                          deriv_+1, 1e-15);
+}
+
+GiaoERI::~GiaoERI()
 {
     delete fjt_;
 }

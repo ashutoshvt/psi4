@@ -2550,12 +2550,12 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
                         double T = rho * PQ2;
                         fjt_->set_rho(rho);
-                        double *F = fjt_->values(am, T);
+                        double *F = fjt_->values(am+1, T);
 
                         // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                         double Scd = pow(M_PI * oon, 3.0 / 2.0) * exp(-a3 * a4 * oon * CD2) * c3 * c4;
                         double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd;
-                        for (int i = 0; i <= am; ++i) {
+                        for (int i = 0; i <= am+1; ++i) {
                             libint_.PrimQuartet[nprim].F[i] = F[i] * val;
                         }
                         nprim++;
@@ -2579,7 +2579,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     if (am) {
         double *target_ints;
 
-        target_ints = build_eri[am1][am2][am3][am4](&libint_, nprim);
+        target_ints = build_eri[am1+1][am2][am3][am4](&libint_, nprim);
 
         memcpy(source_, target_ints, sizeof(double) * size);
     } else {

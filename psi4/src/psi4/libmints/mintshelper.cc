@@ -862,6 +862,17 @@ SharedMatrix MintsHelper::ao_eri_shell(int M, int N, int P, int Q) {
     return ao_shell_getter("AO ERI Tensor", eriInts_, M, N, P, Q);
 }
 
+SharedMatrix MintsHelper::giao_eri_deriv(std::shared_ptr<IntegralFactory> input_factory) {
+    std::shared_ptr<IntegralFactory> factory;
+    if (input_factory){
+        factory = input_factory;
+    } else {
+        factory = integral_;
+    }
+
+    return ao_helper("GIAO ERI Tensor", std::shared_ptr<TwoBodyAOInt>(factory->giao_eri_deriv()));
+}
+
 SharedMatrix MintsHelper::ao_erfc_eri(double omega) {
     std::shared_ptr<TwoBodyAOInt> ints(integral_->erf_complement_eri(omega));
     return ao_helper("AO ERFC ERI Tensor", ints);

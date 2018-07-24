@@ -299,6 +299,11 @@ OneBodyAOInt* IntegralFactory::giao_potential(int deriv)
     return new GiaoPotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
+TwoBodyAOInt* IntegralFactory::giao_eri_deriv(int deriv, bool use_shell_pairs)
+{
+    return new GiaoERI(this, deriv, use_shell_pairs);
+}
+
 TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs)
 {
 #ifdef USING_simint

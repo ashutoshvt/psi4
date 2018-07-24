@@ -147,6 +147,15 @@ public:
     virtual ~ERI();
 };
 
+class GiaoERI : public TwoElectronInt
+{
+public:
+    GiaoERI(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    //! Computes the Giao ERIs between four shells.
+    size_t compute_quartet(int, int, int, int);
+    virtual ~GiaoERI();
+};
+
 class F12 : public TwoElectronInt
 {
 public:

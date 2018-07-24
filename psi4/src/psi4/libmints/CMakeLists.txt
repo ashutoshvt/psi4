@@ -68,6 +68,7 @@ set(sources_list local.cc
                  giao_angmom.cc
                  giao_kinetic.cc
                  giao_potential.cc
+                 giao_eri.cc
 		 bessel.cc
 		 gaussquad.cc
 		 ecpint.cc
